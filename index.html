@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poster Designer Pro</title>
+    <title>Poster Designer Pro - Edición Comunitaria</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
@@ -15,14 +15,14 @@
             overflow: hidden;
         }
 
-        /* Área de Trabajo */
+        /* Área de Trabajo Principal */
         .workspace {
             display: grid;
             grid-template-columns: 350px 1fr 300px;
             height: 100vh;
         }
 
-        /* El Lienzo del Póster */
+        /* El Lienzo del Póster (Canvas de Diseño) */
         #posterCanvas {
             width: 450px;
             height: 650px;
@@ -42,6 +42,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            min-width: 20px;
+            min-height: 20px;
         }
         .draggable:hover {
             outline: 2px dashed #3b82f6;
@@ -80,7 +82,7 @@
             overflow-y: auto;
         }
 
-        /* Estilos de Texto */
+        /* Estilos Tipográficos */
         .style-elegant { font-family: 'Playfair Display', serif; text-transform: none; }
         .style-funny { font-family: 'Bangers', cursive; text-transform: uppercase; letter-spacing: 1px; }
         .style-bold { font-family: 'Inter', sans-serif; font-weight: 900; text-transform: uppercase; }
@@ -110,7 +112,9 @@
             border-radius: 0.5rem;
             font-size: 0.75rem;
             font-weight: bold;
+            transition: background 0.2s;
         }
+        .btn-secondary:hover { background: #475569; }
 
         #loadingOverlay {
             position: fixed;
@@ -121,6 +125,17 @@
             justify-content: center;
             z-index: 1000;
         }
+
+        /* Estilo de la chapa de "Anuncio" */
+        .ad-badge {
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -128,87 +143,91 @@
     <div id="loadingOverlay">
         <div class="text-center">
             <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="font-bold">PROCESANDO DISEÑO...</p>
+            <p class="font-bold tracking-widest">CREANDO TU ANUNCIO...</p>
         </div>
     </div>
 
     <div class="workspace">
         
-        <!-- PANEL IZQUIERDO -->
+        <!-- PANEL IZQUIERDO: CONFIGURACIÓN Y GENERACIÓN -->
         <aside class="tool-panel space-y-6">
             <div>
                 <h2 class="text-xl font-black mb-1 italic">POSTER DESIGNER PRO</h2>
-                <p class="text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-6">Estudio de Creación Visual</p>
+                <p class="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em] mb-6">Versión Comunitaria 1.0</p>
             </div>
 
             <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">1. Configuración IA</label>
-                <input type="password" id="apiKey" placeholder="API Key de Gemini">
+                <label class="block text-xs font-bold text-slate-500 uppercase">1. Conectar IA</label>
+                <input type="password" id="apiKey" placeholder="Pega tu API Key de Gemini">
             </div>
 
             <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">2. Fondo del Póster</label>
+                <label class="block text-xs font-bold text-slate-500 uppercase">2. Imagen del Anuncio</label>
                 <div class="border-2 border-dashed border-slate-700 rounded-xl p-4 text-center hover:border-blue-500 transition-colors relative">
                     <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-                    <p class="text-xs text-slate-400">Cambiar Foto de Fondo</p>
+                    <p class="text-xs text-slate-400">Subir foto del producto o fondo</p>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">3. Logos y Elementos</label>
-                <div class="grid grid-cols-1 gap-2">
-                    <div class="relative">
-                        <input type="file" id="logoInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-                        <button class="btn-secondary w-full flex items-center justify-center gap-2">
-                            <span>+ Subir Logo</span>
-                        </button>
-                    </div>
-                    <button id="addCommentBtn" class="btn-secondary flex items-center justify-center gap-2">
-                        <span>+ Agregar Comentario</span>
-                    </button>
-                </div>
+                <label class="block text-xs font-bold text-slate-500 uppercase">3. Tipo de Anuncio</label>
+                <select id="adType">
+                    <option value="venta">Venta / Clasificado</option>
+                    <option value="evento">Evento Comunitario</option>
+                    <option value="servicio">Ofrecimiento de Servicio</option>
+                    <option value="aviso">Aviso / Urgente</option>
+                </select>
             </div>
 
             <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">4. ¿Qué anuncias?</label>
-                <textarea id="promptInput" rows="3" placeholder="Describe tu actividad para que la IA cree el contenido..."></textarea>
+                <label class="block text-xs font-bold text-slate-500 uppercase">4. ¿De qué trata?</label>
+                <textarea id="promptInput" rows="3" placeholder="Ej: Vendo bicicleta roja casi nueva, 50€. Contacto: 600..."></textarea>
             </div>
 
-            <button id="magicBtn" class="btn-primary w-full mt-4">GENERAR CONTENIDO IA</button>
+            <div class="space-y-4">
+                <label class="block text-xs font-bold text-slate-500 uppercase">5. Estilo Visual</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setGlobalTheme('elegant')" class="btn-secondary">Elegante</button>
+                    <button onclick="setGlobalTheme('funny')" class="btn-secondary">Divertido</button>
+                </div>
+            </div>
+
+            <button id="magicBtn" class="btn-primary w-full mt-4">GENERAR ANUNCIO AHORA</button>
         </aside>
 
-        <!-- ÁREA CENTRAL -->
+        <!-- ÁREA CENTRAL: PREVISUALIZACIÓN -->
         <main class="flex flex-col items-center justify-center bg-slate-900 p-8 overflow-hidden">
             <div id="posterCanvas">
-                <img id="bgImage" src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=1000" alt="background">
+                <img id="bgImage" src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000" alt="background">
                 
-                <div id="elTitle" class="draggable active style-elegant text-4xl font-bold" style="top: 50px; left: 50px; width: 350px;">
-                    TÍTULO PRINCIPAL
+                <div id="elTitle" class="draggable active style-bold text-4xl" style="top: 80px; left: 40px; width: 370px;">
+                    ¡ANUNCIO AQUÍ!
                 </div>
 
-                <div id="elDesc" class="draggable style-elegant text-sm text-center" style="top: 450px; left: 50px; width: 350px;">
-                    Descripción del anuncio editable y movible.
+                <div id="elDesc" class="draggable style-elegant text-sm bg-white/80 p-4 rounded shadow-sm" style="top: 400px; left: 40px; width: 370px;">
+                    Usa la IA para generar una descripción vendedora para tu comunidad automáticamente.
                 </div>
 
-                <div id="elDetails" class="draggable font-bold text-xs bg-black text-white px-3 py-1 uppercase" style="top: 580px; left: 50px;">
-                    DETALLES DEL EVENTO
+                <div id="elDetails" class="draggable font-bold text-xs bg-blue-600 text-white px-4 py-2 rounded-full uppercase" style="top: 560px; left: 40px;">
+                    PRECIO | CONTACTO | LUGAR
                 </div>
             </div>
+            <p class="text-[10px] text-slate-500 mt-4 uppercase font-bold tracking-widest">Diseña libremente arrastrando los elementos</p>
         </main>
 
-        <!-- PANEL DERECHO -->
+        <!-- PANEL DERECHO: AJUSTES Y EXPORTACIÓN -->
         <aside class="edit-panel space-y-6">
-            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Ajustes de Capa</h3>
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest border-b border-slate-700 pb-2">Editor de Capa</h3>
             
             <div id="editorControls" class="space-y-4">
-                <!-- Editor de Texto -->
+                
                 <div id="textControls" class="space-y-4">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Contenido del Texto</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Editar Texto</label>
                         <textarea id="textEdit" rows="3"></textarea>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Tamaño</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Tamaño Fuente</label>
                         <input type="range" id="sizeEdit" min="10" max="150" value="40">
                     </div>
                     <div class="space-y-2">
@@ -217,27 +236,34 @@
                     </div>
                 </div>
 
-                <!-- Editor de Logo (Se muestra cuando se selecciona un logo) -->
                 <div id="logoControls" class="space-y-4 hidden">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Ancho del Logo</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Escalar Logo</label>
                         <input type="range" id="logoSizeEdit" min="20" max="400" value="100">
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Fondo de Capa (Opacidad)</label>
+                <div class="space-y-2 pt-4">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Fondo de Etiqueta (Opacidad)</label>
                     <input type="range" id="bgOpacityEdit" min="0" max="100" value="0">
                 </div>
 
+                <div class="pt-4 grid grid-cols-1 gap-2">
+                    <div class="relative">
+                        <input type="file" id="logoInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <button class="btn-secondary w-full text-[10px] py-3">+ SUBIR LOGO / ICONO</button>
+                    </div>
+                    <button id="addCommentBtn" class="btn-secondary text-[10px] py-3">+ NUEVO TEXTO EXTRA</button>
+                </div>
+
                 <div class="pt-4">
-                    <button id="deleteElementBtn" class="w-full p-2 bg-red-900/50 hover:bg-red-600 rounded text-[10px] font-bold uppercase transition-colors">Eliminar Capa Seleccionada</button>
+                    <button id="deleteElementBtn" class="w-full p-2 bg-red-900/30 hover:bg-red-600 rounded text-[9px] font-bold uppercase transition-all">Eliminar seleccionado</button>
                 </div>
             </div>
 
             <div class="pt-6 border-t border-slate-700 space-y-3">
-                <button id="downloadJpg" class="w-full p-3 bg-blue-600 hover:bg-blue-500 rounded text-xs font-bold uppercase">Exportar como JPG</button>
-                <button onclick="window.print()" class="w-full p-3 bg-slate-700 hover:bg-slate-600 rounded text-xs font-bold uppercase">Imprimir PDF</button>
+                <button id="downloadJpg" class="w-full p-4 bg-green-600 hover:bg-green-500 rounded text-xs font-black uppercase shadow-lg shadow-green-900/20">DESCARGAR JPG PARA WHATSAPP</button>
+                <button onclick="window.print()" class="w-full p-2 bg-slate-800 hover:bg-slate-700 rounded text-[10px] font-bold uppercase text-slate-400">Versión para Imprimir</button>
             </div>
         </aside>
 
@@ -247,10 +273,12 @@
         let activeElement = document.getElementById('elTitle');
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
+        let currentTheme = 'elegant';
 
         const apiKeyInput = document.getElementById('apiKey');
         const imageInput = document.getElementById('imageInput');
         const logoInput = document.getElementById('logoInput');
+        const adType = document.getElementById('adType');
         const addCommentBtn = document.getElementById('addCommentBtn');
         const bgImage = document.getElementById('bgImage');
         const magicBtn = document.getElementById('magicBtn');
@@ -258,7 +286,7 @@
         const posterCanvas = document.getElementById('posterCanvas');
         const downloadJpg = document.getElementById('downloadJpg');
 
-        // Función para asignar eventos de arrastre a nuevos elementos
+        // Drag and Drop
         function makeDraggable(el) {
             el.addEventListener('mousedown', (e) => {
                 activeElement = el;
@@ -298,7 +326,6 @@
             return result ? "#" + result.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('') : "#000000";
         }
 
-        // Mouse Events Globales
         document.addEventListener('mousemove', (e) => {
             if (!isDragging || !activeElement) return;
             const dx = e.clientX - startX;
@@ -309,10 +336,19 @@
 
         document.addEventListener('mouseup', () => isDragging = false);
 
-        // Inicializar elementos existentes
+        // Inicializar
         document.querySelectorAll('.draggable').forEach(makeDraggable);
 
-        // Subir Logos
+        // Estilo Global
+        window.setGlobalTheme = (theme) => {
+            currentTheme = theme;
+            const title = document.getElementById('elTitle');
+            const desc = document.getElementById('elDesc');
+            title.className = `draggable active ${theme === 'elegant' ? 'style-elegant text-4xl italic font-bold' : 'style-funny text-5xl font-black'}`;
+            desc.className = `draggable ${theme === 'elegant' ? 'style-elegant text-sm bg-white/80 p-4 rounded' : 'style-bold text-xs bg-yellow-400 p-2 uppercase'}`;
+        };
+
+        // Carga de Logos
         logoInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -320,9 +356,10 @@
                 reader.onload = (ev) => {
                     const div = document.createElement('div');
                     div.className = 'draggable logo-element';
-                    div.style.width = '100px';
-                    div.style.top = '100px';
-                    div.style.left = '100px';
+                    div.style.width = '80px';
+                    div.style.top = '20px';
+                    div.style.right = '20px';
+                    div.style.left = 'auto'; // Permitir posicionamiento libre
                     div.innerHTML = `<img src="${ev.target.result}" alt="logo">`;
                     posterCanvas.appendChild(div);
                     makeDraggable(div);
@@ -331,29 +368,26 @@
             }
         });
 
-        // Agregar Comentarios
+        // Textos Adicionales
         addCommentBtn.addEventListener('click', () => {
             const div = document.createElement('div');
-            div.className = 'draggable style-bold text-sm';
-            div.style.top = '200px';
-            div.style.left = '100px';
-            div.style.width = '200px';
-            div.innerText = 'Nuevo comentario...';
+            div.className = 'draggable style-bold text-[10px] bg-white p-2 border border-black';
+            div.style.top = '300px';
+            div.style.left = '50px';
+            div.innerText = 'Escribe aquí tu nota...';
             posterCanvas.appendChild(div);
             makeDraggable(div);
         });
 
-        // Eliminar Elementos
+        // Eliminar
         document.getElementById('deleteElementBtn').addEventListener('click', () => {
             if (activeElement && !['elTitle', 'elDesc', 'elDetails'].includes(activeElement.id)) {
                 activeElement.remove();
                 activeElement = null;
-            } else if (activeElement) {
-                alert("Este elemento principal no se puede borrar, solo editar.");
             }
         });
 
-        // Controles Live
+        // Sincronización Editor
         document.getElementById('textEdit').addEventListener('input', (e) => {
             if (activeElement && !activeElement.classList.contains('logo-element')) {
                 activeElement.innerText = e.target.value;
@@ -377,31 +411,31 @@
         });
 
         document.getElementById('bgOpacityEdit').addEventListener('input', (e) => {
-            if (activeElement) activeElement.style.backgroundColor = `rgba(0,0,0,${e.target.value/100})`;
+            if (activeElement) activeElement.style.backgroundColor = `rgba(255,255,255,${e.target.value/100})`;
         });
 
-        // Exportar JPG
+        // EXPORTACIÓN JPG
         downloadJpg.addEventListener('click', () => {
             loading.style.display = 'flex';
-            // Quitar el borde de selección antes de la captura
             document.querySelectorAll('.draggable').forEach(d => d.classList.remove('active'));
             
             html2canvas(posterCanvas, {
                 useCORS: true,
-                scale: 2 // Alta calidad
+                scale: 3, // Super alta resolución para móvil
+                backgroundColor: null
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'mi-poster-pro.jpg';
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.download = `Anuncio_${adType.value}_${Date.now()}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
                 link.click();
                 loading.style.display = 'none';
             });
         });
 
-        // IA Integration
+        // IA GEMINI INTEGRATION
         async function fetchGemini(prompt, base64) {
             const key = apiKeyInput.value.trim();
-            if (!key) throw new Error("API Key requerida");
+            if (!key) throw new Error("Falta la API Key");
             
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
             
@@ -420,8 +454,8 @@
                             properties: {
                                 headline: { type: "string" },
                                 body: { type: "string" },
-                                footer: { type: "string" },
-                                color: { type: "string" }
+                                info: { type: "string" },
+                                accentColor: { type: "string" }
                             }
                         }
                     }
@@ -429,13 +463,17 @@
             });
 
             const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
             return JSON.parse(data.candidates[0].content.parts[0].text);
         }
 
         magicBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
-            const userPrompt = document.getElementById('promptInput').value;
-            if (!key) return alert("Pega tu API Key de Gemini");
+            const prompt = document.getElementById('promptInput').value;
+            const type = adType.value;
+
+            if (!key) return alert("Por favor, introduce tu API Key para usar la IA.");
+            if (!prompt) return alert("Escribe un poco sobre qué quieres anunciar.");
 
             loading.style.display = 'flex';
             
@@ -449,28 +487,32 @@
                     });
                 }
 
-                const aiPrompt = `Eres un director creativo. Crea contenido publicitario profesional basado en: "${userPrompt}". 
-                Analiza la imagen si existe. El headline (título) debe ser impactante. El body una invitación cautivadora. El footer los detalles técnicos. 
-                Sugiere un color hexadecimal para el texto que sea legible y elegante sobre el fondo.`;
+                const aiPrompt = `Eres un experto en anuncios para comunidades locales. Crea un anuncio de tipo "${type}" basado en esto: "${prompt}". 
+                Analiza la imagen si la hay. 
+                - headline: Título corto y atractivo.
+                - body: Descripción que convenza a la gente de la comunidad.
+                - info: Datos clave (Precio, contacto o lugar) en formato corto.
+                - accentColor: Sugiere un color hexadecimal que pegue con un diseño ${currentTheme}.`;
 
                 const result = await fetchGemini(aiPrompt, base64);
 
                 document.getElementById('elTitle').innerText = result.headline;
                 document.getElementById('elDesc').innerText = result.body;
-                document.getElementById('elDetails').innerText = result.footer;
+                document.getElementById('elDetails').innerText = result.info;
+                document.getElementById('elDetails').style.backgroundColor = result.accentColor;
                 
-                document.querySelectorAll('.draggable:not(.logo-element)').forEach(el => {
-                    el.style.color = result.color;
-                });
+                if (currentTheme === 'funny') {
+                    document.getElementById('elTitle').style.color = result.accentColor;
+                }
 
             } catch (err) {
-                alert("Error de IA: " + err.message);
+                alert("Hubo un problema: " + err.message);
             } finally {
                 loading.style.display = 'none';
             }
         });
 
-        // Carga de Fondo
+        // Imagen de Fondo
         imageInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -480,8 +522,9 @@
             }
         });
 
-        // Initialize
-        if(localStorage.getItem('gemini_free_key')) apiKeyInput.value = localStorage.getItem('gemini_free_key');
+        // Persistencia de API Key básica
+        apiKeyInput.addEventListener('change', () => localStorage.setItem('gemini_key', apiKeyInput.value));
+        if(localStorage.getItem('gemini_key')) apiKeyInput.value = localStorage.getItem('gemini_key');
     </script>
 </body>
 </html>
