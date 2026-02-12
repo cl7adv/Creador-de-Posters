@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Log Station v5.3.2 - Alfred CL7ADV</title>
+    <title>Neon Log Station v5.3.5 - Alfred CL7ADV</title>
     <style>
         :root {
             --bg-dark: #050a14;
@@ -24,7 +24,7 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
-            overflow: hidden;
+            overflow-x: hidden;
             position: relative;
         }
 
@@ -85,7 +85,6 @@
             flex-direction: column;
             opacity: 0;
             transition: opacity 2s ease;
-            overflow-y: auto;
         }
 
         header {
@@ -104,7 +103,7 @@
             margin-top: 5px;
         }
 
-        .container { padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; }
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; flex-grow: 1; }
 
         /* MENU CASILLAS */
         .grid-menu {
@@ -187,7 +186,7 @@
         tr:hover { background: rgba(0,229,255,0.05); }
 
         .action-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: 0.2s; }
-        .action-btn:hover { transform: scale(1.2); }
+        .action-btn:hover { transform: scale(1.3); }
 
         @media (max-width: 600px) {
             .grid-menu { grid-template-columns: repeat(2, 1fr); }
@@ -211,13 +210,13 @@
 
 <div id="main-content">
     <header>
-        <h1 style="font-size: 1.3rem;">NEON LOG STATION v5.3.2</h1>
+        <h1 style="font-size: 1.3rem;">NEON LOG STATION v5.3.5</h1>
         <p style="font-size: 0.8rem;">Op: <span id="header-op" style="color:var(--neon-yellow)">---</span> | <span id="header-count">0</span> QSOs registrados</p>
         <div id="clock" class="time-display">00:00:00 UTC</div>
     </header>
 
     <div class="container">
-        <!-- CASILLAS -->
+        <!-- CASILLAS MENU -->
         <div class="grid-menu">
             <div id="btn-op" class="menu-item" onclick="togglePanel('panel-op', 'btn-op')">
                 <span class="number">00</span><i>👤</i><span>Operador</span>
@@ -228,24 +227,27 @@
             <div id="btn-table" class="menu-item" onclick="togglePanel('panel-table', 'btn-table')">
                 <span class="number">02</span><i>📋</i><span>Libro</span>
             </div>
-            <div id="btn-import" class="menu-item" onclick="togglePanel('panel-import', 'btn-import')">
-                <span class="number">03</span><i>📥</i><span>Importar</span>
-            </div>
             <div id="btn-export" class="menu-item" onclick="exportADIF()">
-                <span class="number">04</span><i>💾</i><span>Exportar</span>
+                <span class="number">03</span><i>💾</i><span>Exportar</span>
             </div>
             <div id="btn-clear" class="menu-item" onclick="clearLogs()">
-                <span class="number">05</span><i>🗑️</i><span>Limpiar</span>
+                <span class="number">04</span><i>🗑️</i><span>Limpiar</span>
             </div>
         </div>
 
         <!-- PANEL OPERADOR -->
         <div id="panel-op" class="log-entry-panel">
-            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;">Ajustes Estación</h3>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;">Ajustes de Estación (Mía)</h3>
             <div class="form-row">
                 <div class="form-group"><label>Tu Indicativo</label><input type="text" id="op_call" placeholder="CL7ADV" oninput="saveOperatorData()"></div>
                 <div class="form-group"><label>Tu Nombre</label><input type="text" id="op_name" placeholder="Alfred" oninput="saveOperatorData()"></div>
                 <div class="form-group"><label>Tu Grilla</label><input type="text" id="op_grid" placeholder="FL01aa" oninput="saveOperatorData()"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Tu Correo Electrónico (Opcional)</label>
+                    <input type="email" id="op_email" placeholder="tu_correo@ejemplo.com" oninput="saveOperatorData()">
+                </div>
             </div>
         </div>
 
@@ -284,20 +286,26 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Fecha UTC (Ej: 20240520)</label>
+                    <label>Fecha UTC (AAAA/MM/DD)</label>
                     <input type="text" id="manual_date" placeholder="Auto si vacío">
                 </div>
                 <div class="form-group">
-                    <label>Hora UTC (Ej: 143005)</label>
+                    <label>Hora UTC (HH:MM:SS)</label>
                     <input type="text" id="manual_time" placeholder="Auto si vacío">
                 </div>
-                <div class="form-group"><label>Sent</label><input type="text" id="rst_s" value="59"></div>
-                <div class="form-group"><label>Rcvd</label><input type="text" id="rst_r" value="59"></div>
+                <div class="form-group"><label>RST Sent</label><input type="text" id="rst_s" value="59"></div>
+                <div class="form-group"><label>RST Rcvd</label><input type="text" id="rst_r" value="59"></div>
             </div>
 
-            <div class="form-group">
-                <label>Comentarios / Nombre</label>
-                <input type="text" id="comment" placeholder="Ej: Juan de Camaguey...">
+            <div class="form-row">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Correo del Corresponsal (Opcional)</label>
+                    <input type="email" id="email" placeholder="correo_contacto@ejemplo.com">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Comentarios / Nombre</label>
+                    <input type="text" id="comment" placeholder="Ej: Juan de Camagüey...">
+                </div>
             </div>
             
             <div style="display: flex; gap: 10px;">
@@ -306,7 +314,7 @@
             </div>
         </div>
 
-        <!-- PANEL TABLA -->
+        <!-- PANEL TABLA LIBRO -->
         <div id="panel-table" class="log-entry-panel">
             <h3 style="color: var(--neon-cyan); margin-bottom: 10px;">Libro de Guardia</h3>
             <input type="text" id="search" class="search-box" placeholder="🔎 Filtrar por indicativo..." oninput="renderTable()" style="width:100%; padding:10px; background:#000; border:1px solid var(--neon-cyan); color:var(--neon-green); margin-bottom:15px; border-radius:5px;">
@@ -319,22 +327,18 @@
                 </table>
             </div>
         </div>
-
-        <!-- PANEL IMPORTAR -->
-        <div id="panel-import" class="log-entry-panel">
-            <h3 style="color: var(--neon-green); margin-bottom: 15px;">Importar ADIF</h3>
-            <input type="file" id="import-file" style="display: none;" onchange="processImport(this)">
-            <button class="btn btn-green" onclick="document.getElementById('import-file').click()" style="width: 100%;">📁 Abrir Archivo .adi</button>
-        </div>
     </div>
 </div>
 
 <script>
-    // Almacenamiento e Inicialización
-    let qsoList = JSON.parse(localStorage.getItem('cl7adv_logs_v5_stable')) || [];
-    let opData = JSON.parse(localStorage.getItem('cl7adv_operator_stable')) || { call: "", name: "", grid: "" };
+    // Persistencia - Clave única
+    const STORAGE_KEY = 'cl7adv_logs_v5_3_5';
+    const OP_KEY = 'cl7adv_operator_v5_3_5';
 
-    // Animación de entrada
+    let qsoList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let opData = JSON.parse(localStorage.getItem(OP_KEY)) || { call: "", name: "", grid: "", email: "" };
+
+    // Animación inicial
     window.addEventListener('load', () => {
         setTimeout(() => {
             const intro = document.getElementById('intro-screen');
@@ -344,12 +348,12 @@
                 intro.style.visibility = 'hidden';
                 main.style.opacity = '1';
                 document.body.style.overflow = 'auto';
-            }, 1500);
-        }, 1500); 
+            }, 1000);
+        }, 1000); 
     });
 
-    // SISTEMA DE TIEMPO SÓLIDO (UTC)
-    function getUTCString() {
+    // Lógica de Tiempo UTC
+    function getUTCInfo() {
         const now = new Date();
         const y = now.getUTCFullYear();
         const m = (now.getUTCMonth() + 1).toString().padStart(2, '0');
@@ -359,23 +363,30 @@
         const ss = now.getUTCSeconds().toString().padStart(2, '0');
         
         return {
-            date: `${y}${m}${d}`,
-            time: `${hh}${mm}${ss}`,
+            dateRaw: `${y}${m}${d}`,
+            timeRaw: `${hh}${mm}${ss}`,
+            dateFormatted: `${y}/${m}/${d}`,
+            timeFormatted: `${hh}:${mm}:${ss}`,
             display: `${hh}:${mm}:${ss}`
         };
     }
 
     function updateClock() {
-        document.getElementById('clock').textContent = getUTCString().display + " UTC";
+        document.getElementById('clock').textContent = getUTCInfo().display + " UTC";
     }
     setInterval(updateClock, 1000);
 
-    // Manejo de Paneles
+    // Navegación de paneles
     function togglePanel(panelId, buttonId) {
         document.querySelectorAll('.log-entry-panel').forEach(p => p.classList.remove('active-panel'));
         document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active-item'));
-        document.getElementById(panelId).classList.add('active-panel');
-        document.getElementById(buttonId).classList.add('active-item');
+        
+        const targetPanel = document.getElementById(panelId);
+        if (targetPanel) targetPanel.classList.add('active-panel');
+        
+        const targetBtn = document.getElementById(buttonId);
+        if (targetBtn) targetBtn.classList.add('active-item');
+
         if(panelId === 'panel-table') renderTable();
     }
 
@@ -383,28 +394,24 @@
         opData.call = document.getElementById('op_call').value.toUpperCase();
         opData.name = document.getElementById('op_name').value;
         opData.grid = document.getElementById('op_grid').value.toUpperCase();
-        localStorage.setItem('cl7adv_operator_stable', JSON.stringify(opData));
+        opData.email = document.getElementById('op_email').value;
+        localStorage.setItem(OP_KEY, JSON.stringify(opData));
         document.getElementById('header-op').textContent = opData.call || "---";
     }
 
-    // SISTEMA DE GUARDADO ROBUSTO
+    // Registro de QSO
     function saveQSO() {
         const call = document.getElementById('call').value.trim().toUpperCase();
-        if(!call) {
-            alert("Error: El indicativo es obligatorio.");
-            return;
-        }
+        if(!call) return alert("Por favor, ingrese el indicativo (Callsign).");
 
-        const utcNow = getUTCString();
+        const utc = getUTCInfo();
         const editId = document.getElementById('edit_id').value;
         
-        // Validación de datos manuales
-        let finalDate = document.getElementById('manual_date').value.trim();
-        let finalTime = document.getElementById('manual_time').value.trim();
+        let rawInputDate = document.getElementById('manual_date').value.trim();
+        let rawInputTime = document.getElementById('manual_time').value.trim();
 
-        // Si están vacíos, usar UTC actual. Si no, limpiar caracteres no numéricos.
-        finalDate = finalDate === "" ? utcNow.date : finalDate.replace(/\D/g, '').substring(0, 8);
-        finalTime = finalTime === "" ? utcNow.time : finalTime.replace(/\D/g, '').substring(0, 6);
+        let finalDate = rawInputDate === "" ? utc.dateRaw : rawInputDate.replace(/\D/g, '').substring(0, 8);
+        let finalTime = rawInputTime === "" ? utc.timeRaw : rawInputTime.replace(/\D/g, '').substring(0, 6);
 
         const qso = {
             id: editId ? parseInt(editId) : Date.now(),
@@ -416,30 +423,29 @@
             rst_r: document.getElementById('rst_r').value.trim() || "59",
             date: finalDate,
             time: finalTime,
+            email: document.getElementById('email').value.trim(),
             comment: document.getElementById('comment').value.trim()
         };
 
         if (editId) {
             const index = qsoList.findIndex(q => q.id === qso.id);
-            if (index !== -1) {
-                qsoList[index] = qso;
-                alert("Registro actualizado.");
-            }
+            if (index !== -1) qsoList[index] = qso;
         } else {
             qsoList.unshift(qso);
-            alert("QSO grabado con éxito.");
         }
 
-        localStorage.setItem('cl7adv_logs_v5_stable', JSON.stringify(qsoList));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(qsoList));
         resetForm();
         updateCount();
         if(editId) togglePanel('panel-table', 'btn-table');
+        else alert("¡Registro guardado correctamente!");
     }
 
     function resetForm() {
         document.getElementById('edit_id').value = "";
         document.getElementById('call').value = "";
         document.getElementById('comment').value = "";
+        document.getElementById('email').value = "";
         document.getElementById('manual_date').value = "";
         document.getElementById('manual_time').value = "";
         document.getElementById('freq').value = "";
@@ -452,10 +458,12 @@
         document.getElementById('cancel-edit').style.display = "none";
     }
 
-    // CARGA DE EDICIÓN SIN ERRORES
     function editQSO(id) {
         const q = qsoList.find(item => item.id === id);
         if (!q) return;
+
+        const vDate = q.date.replace(/(\d{4})(\d{2})(\d{2})/, "$1/$2/$3");
+        const vTime = q.time.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
 
         document.getElementById('edit_id').value = q.id;
         document.getElementById('call').value = q.call;
@@ -464,8 +472,9 @@
         document.getElementById('mode').value = q.mode;
         document.getElementById('rst_s').value = q.rst_s;
         document.getElementById('rst_r').value = q.rst_r;
-        document.getElementById('manual_date').value = q.date;
-        document.getElementById('manual_time').value = q.time;
+        document.getElementById('manual_date').value = vDate;
+        document.getElementById('manual_time').value = vTime;
+        document.getElementById('email').value = q.email || "";
         document.getElementById('comment').value = q.comment;
 
         document.getElementById('panel-title').textContent = "Editando Registro";
@@ -477,15 +486,19 @@
     }
 
     function renderTable() {
-        const f = document.getElementById('search').value.toUpperCase();
+        const filterStr = document.getElementById('search').value.toUpperCase();
         const tbody = document.getElementById('table-body');
         tbody.innerHTML = "";
         
-        const filtered = qsoList.filter(q => q.call.includes(f));
-        
+        const filtered = qsoList.filter(q => q.call.includes(filterStr));
+
         filtered.forEach(q => {
-            tbody.innerHTML += `<tr>
-                <td style="font-family:monospace">${q.date} | ${q.time}</td>
+            const displayDate = q.date.replace(/(\d{4})(\d{2})(\d{2})/, "$1/$2/$3");
+            const displayTime = q.time.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-family:monospace">${displayDate} | ${displayTime}</td>
                 <td style="color:var(--neon-yellow); font-weight:bold">${q.call}</td>
                 <td style="color:var(--neon-green)">${q.freq || '---'}</td>
                 <td>${q.band}</td>
@@ -493,29 +506,49 @@
                 <td>${q.rst_s}/${q.rst_r}</td>
                 <td>
                     <button title="Editar" class="action-btn" onclick="editQSO(${q.id})">✏️</button>
-                    <button title="Borrar" class="action-btn" onclick="deleteQSO(${q.id})" style="color:red">❌</button>
+                    <button title="Borrar" class="action-btn delete-trigger" style="color:red">❌</button>
                 </td>
-            </tr>`;
+            `;
+            
+            // Vinculación segura del botón de borrar individual
+            tr.querySelector('.delete-trigger').addEventListener('click', () => {
+                deleteQSO(q.id);
+            });
+
+            tbody.appendChild(tr);
         });
     }
 
+    // ELIMINACIÓN INDIVIDUAL
     function deleteQSO(id) {
-        if(confirm("¿Seguro que deseas eliminar este registro?")) {
+        if(confirm("¿Estás seguro de que deseas eliminar este registro?")) {
             qsoList = qsoList.filter(q => q.id !== id);
-            localStorage.setItem('cl7adv_logs_v5_stable', JSON.stringify(qsoList));
-            renderTable();
-            updateCount();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(qsoList));
+            renderTable(); 
+            updateCount(); 
         }
     }
 
+    // ELIMINACIÓN TOTAL (BOTÓN 04)
+    function clearLogs() { 
+        if(confirm("¡ATENCIÓN! Se borrarán TODOS los registros del libro de guardia permanentemente. ¿Continuar?")) { 
+            qsoList = []; 
+            localStorage.setItem(STORAGE_KEY, JSON.stringify([])); 
+            updateCount(); 
+            renderTable();
+            alert("Libro de guardia vaciado con éxito.");
+        } 
+    }
+
     function updateCount() { 
-        document.getElementById('header-count').textContent = qsoList.length; 
+        const count = qsoList.length;
+        document.getElementById('header-count').textContent = count; 
     }
 
     function exportADIF() {
-        if(qsoList.length === 0) return alert("El libro está vacío.");
+        if(qsoList.length === 0) return alert("No hay registros para exportar.");
         
-        let adi = `ADIF Export - NEON LOG STATION v5.3.2\n`;
+        let adi = `ADIF Export - NEON LOG STATION v5.3.5\n`;
         adi += `<PROGRAMID:12>NEONLOGSTN53\n<ADIF_VER:5>3.1.4\n<EOH>\n\n`;
 
         qsoList.forEach(q => {
@@ -526,74 +559,35 @@
             adi += `<MODE:${q.mode.length}>${q.mode}`;
             adi += `<RST_SENT:${q.rst_s.length}>${q.rst_s}`;
             adi += `<RST_RCVD:${q.rst_r.length}>${q.rst_r}`;
+            
+            if(q.email) adi += `<EMAIL:${q.email.length}>${q.email}`;
             if(q.freq) adi += `<FREQ:${q.freq.length}>${q.freq}`;
             if(q.comment) adi += `<COMMENT:${q.comment.length}>${q.comment}`;
+            
             if(opData.call) adi += `<STATION_CALLSIGN:${opData.call.length}>${opData.call}`;
             if(opData.name) adi += `<OPERATOR:${opData.name.length}>${opData.name}`;
+            if(opData.email) adi += `<MY_EMAIL:${opData.email.length}>${opData.email}`;
+            
             adi += `<EOR>\n`;
         });
 
         const blob = new Blob([adi], {type: 'text/plain'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `Log_Alfred_CL7ADV_${getUTCString().date}.adi`;
+        a.download = `Log_Alfred_${opData.call || 'Station'}_${getUTCInfo().dateRaw}.adi`;
         a.click();
     }
 
-    function processImport(input) {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            const records = text.split(/<EOR>|<eor>/i);
-            let count = 0;
-            records.forEach(rec => {
-                const getF = (tag) => {
-                    const regex = new RegExp(`<${tag}:\\d+>(.*?)(?=<|$)`, 'i');
-                    const match = rec.match(regex);
-                    return match ? match[1].trim() : "";
-                };
-                const call = getF('CALL');
-                if(call) {
-                    qsoList.push({
-                        id: Date.now() + Math.floor(Math.random() * 10000),
-                        call: call.toUpperCase(),
-                        band: getF('BAND'),
-                        mode: getF('MODE') || "SSB",
-                        freq: getF('FREQ'),
-                        rst_s: getF('RST_SENT') || "59",
-                        rst_r: getF('RST_RCVD') || "59",
-                        date: getF('QSO_DATE') || getUTCString().date,
-                        time: getF('TIME_ON') || getUTCString().time,
-                        comment: getF('COMMENT')
-                    });
-                    count++;
-                }
-            });
-            localStorage.setItem('cl7adv_logs_v5_stable', JSON.stringify(qsoList));
-            alert(`Importados ${count} QSOs.`);
-            updateCount();
-            togglePanel('panel-table', 'btn-table');
-        };
-        reader.readAsText(file);
-    }
-
-    function clearLogs() { 
-        if(confirm("¿Borrar TODO el libro de guardia? Esta acción no se puede deshacer.")) { 
-            qsoList = []; 
-            localStorage.setItem('cl7adv_logs_v5_stable', JSON.stringify([])); 
-            updateCount(); 
-            renderTable(); 
-        } 
-    }
-
     window.onload = function() {
-        document.getElementById('op_call').value = opData.call;
-        document.getElementById('op_name').value = opData.name;
-        document.getElementById('op_grid').value = opData.grid;
+        document.getElementById('op_call').value = opData.call || "";
+        document.getElementById('op_name').value = opData.name || "";
+        document.getElementById('op_grid').value = opData.grid || "";
+        document.getElementById('op_email').value = opData.email || "";
         document.getElementById('header-op').textContent = opData.call || "---";
+        
         updateCount();
         updateClock();
+        renderTable();
     }
 </script>
 </body>
