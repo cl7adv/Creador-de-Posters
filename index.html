@@ -179,6 +179,28 @@
         .btn-green { background: var(--neon-green); color: #000; }
         .btn-cyan { background: var(--neon-cyan); color: #000; }
 
+        /* ESTILO PARA EL BUSCADOR QRZ */
+        .qrz-input-wrapper {
+            display: flex;
+            gap: 5px;
+        }
+        .qrz-input-wrapper input { flex-grow: 1; }
+        .btn-qrz {
+            background: #ffea00;
+            color: #000;
+            padding: 0 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 10px rgba(255, 234, 0, 0.4);
+        }
+        .btn-qrz:hover { background: #fff; box-shadow: 0 0 20px #ffea00; }
+
         .table-container { width: 100%; overflow-x: auto; background: rgba(0,0,0,0.3); border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 700px; font-size: 0.85rem; }
         th { background: var(--panel-bg); color: var(--neon-yellow); text-align: left; padding: 12px; border-bottom: 2px solid var(--neon-cyan); }
@@ -258,7 +280,10 @@
             <div class="form-row">
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Callsign Corresponsal</label>
-                    <input type="text" id="call" placeholder="Indicativo" onkeyup="this.value = this.value.toUpperCase()">
+                    <div class="qrz-input-wrapper">
+                        <input type="text" id="call" placeholder="Indicativo" onkeyup="this.value = this.value.toUpperCase()">
+                        <button type="button" class="btn-qrz" title="Ver en QRZ.com" onclick="checkQRZ()">⚡</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Frecuencia (MHz)</label>
@@ -331,14 +356,12 @@
 </div>
 
 <script>
-    // Persistencia - Clave única
     const STORAGE_KEY = 'cl7adv_logs_v5_3_5';
     const OP_KEY = 'cl7adv_operator_v5_3_5';
 
     let qsoList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let opData = JSON.parse(localStorage.getItem(OP_KEY)) || { call: "", name: "", grid: "", email: "" };
 
-    // Animación inicial
     window.addEventListener('load', () => {
         setTimeout(() => {
             const intro = document.getElementById('intro-screen');
@@ -352,7 +375,6 @@
         }, 1000); 
     });
 
-    // Lógica de Tiempo UTC
     function getUTCInfo() {
         const now = new Date();
         const y = now.getUTCFullYear();
@@ -376,7 +398,6 @@
     }
     setInterval(updateClock, 1000);
 
-    // Navegación de paneles
     function togglePanel(panelId, buttonId) {
         document.querySelectorAll('.log-entry-panel').forEach(p => p.classList.remove('active-panel'));
         document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active-item'));
@@ -399,7 +420,16 @@
         document.getElementById('header-op').textContent = opData.call || "---";
     }
 
-    // Registro de QSO
+    // FUNCION PARA VERIFICAR EN QRZ.COM
+    function checkQRZ() {
+        const call = document.getElementById('call').value.trim().toUpperCase();
+        if (!call) {
+            alert("Por favor, introduce un indicativo primero.");
+            return;
+        }
+        window.open(`https://www.qrz.com/db/${call}`, '_blank');
+    }
+
     function saveQSO() {
         const call = document.getElementById('call').value.trim().toUpperCase();
         if(!call) return alert("Por favor, ingrese el indicativo (Callsign).");
@@ -506,11 +536,11 @@
                 <td>${q.rst_s}/${q.rst_r}</td>
                 <td>
                     <button title="Editar" class="action-btn" onclick="editQSO(${q.id})">✏️</button>
+                    <button title="QRZ" class="action-btn" onclick="window.open('https://www.qrz.com/db/${q.call}', '_blank')">🌐</button>
                     <button title="Borrar" class="action-btn delete-trigger" style="color:red">❌</button>
                 </td>
             `;
             
-            // Vinculación segura del botón de borrar individual
             tr.querySelector('.delete-trigger').addEventListener('click', () => {
                 deleteQSO(q.id);
             });
@@ -519,7 +549,6 @@
         });
     }
 
-    // ELIMINACIÓN INDIVIDUAL
     function deleteQSO(id) {
         if(confirm("¿Estás seguro de que deseas eliminar este registro?")) {
             qsoList = qsoList.filter(q => q.id !== id);
@@ -529,7 +558,6 @@
         }
     }
 
-    // ELIMINACIÓN TOTAL (BOTÓN 04)
     function clearLogs() { 
         if(confirm("¡ATENCIÓN! Se borrarán TODOS los registros del libro de guardia permanentemente. ¿Continuar?")) { 
             qsoList = []; 
