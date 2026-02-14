@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Creador de Logos - Caribe</title>
+<title>Creador de Logos y Fondos - Caribe</title>
 
 <style>
     body {
@@ -15,7 +15,7 @@
     }
 
     .container {
-        max-width: 600px;
+        max-width: 800px;
         margin: auto;
         background: rgba(255,255,255,0.15);
         padding: 20px;
@@ -26,7 +26,15 @@
 
     h1 {
         text-align: center;
+        margin-bottom: 10px;
+    }
+
+    p.descripcion {
+        text-align: center;
+        font-size: 14px;
+        margin-top: 0;
         margin-bottom: 20px;
+        opacity: 0.9;
     }
 
     label {
@@ -37,10 +45,20 @@
 
     input, select {
         width: 100%;
-        padding: 10px;
+        padding: 8px;
         border-radius: 6px;
         border: none;
         margin-top: 5px;
+    }
+
+    .fila {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .fila > div {
+        flex: 1 1 150px;
     }
 
     button {
@@ -49,7 +67,7 @@
         background: #ffcc00;
         border: none;
         border-radius: 8px;
-        font-size: 18px;
+        font-size: 16px;
         margin-top: 15px;
         cursor: pointer;
         font-weight: bold;
@@ -68,6 +86,7 @@
         margin-top: 15px;
         background: white;
         border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
 </style>
 </head>
@@ -75,72 +94,403 @@
 <body>
 
 <div class="container">
-    <h1>🎨 Creador de Logos Caribe</h1>
+    <h1>🎨 Creador de Logos y Fondos Caribe</h1>
+    <p class="descripcion">
+        Genera logos y fondos de imágenes con formas, colores y estilos caribeños. 
+        Ideal para QSL, perfiles, banners y proyectos creativos.
+    </p>
 
     <label>Texto del logo</label>
     <input id="texto" placeholder="Ej: CL7ADV">
 
-    <label>Color del texto</label>
-    <input type="color" id="color" value="#000000">
-
-    <label>Tamaño del texto</label>
-    <input type="number" id="tamano" value="60">
+    <div class="fila">
+        <div>
+            <label>Color del texto</label>
+            <input type="color" id="colorTexto" value="#000000">
+        </div>
+        <div>
+            <label>Tamaño del texto</label>
+            <input type="number" id="tamanoTexto" value="60">
+        </div>
+    </div>
 
     <label>Forma del logo</label>
     <select id="forma">
+        <!-- Básicas -->
+        <option value="none">Sin forma</option>
         <option value="circle">Círculo</option>
         <option value="square">Cuadrado</option>
-        <option value="none">Sin forma</option>
+        <option value="rect">Rectángulo</option>
+        <option value="oval">Óvalo</option>
+        <option value="triangle">Triángulo</option>
+        <option value="hexagon">Hexágono</option>
+
+        <!-- Modernas -->
+        <option value="rounded">Marco redondeado</option>
+        <option value="pill">Pastilla</option>
+        <option value="cardH">Tarjeta horizontal</option>
+        <option value="cardV">Tarjeta vertical</option>
+
+        <!-- Creativas -->
+        <option value="star">Estrella</option>
+        <option value="seal">Sello redondo</option>
+        <option value="wavySeal">Sello ondulado</option>
+        <option value="flag">Bandera</option>
+        <option value="drop">Gota</option>
+
+        <!-- Radioaficionados -->
+        <option value="diamondDX">Diamante DX</option>
+        <option value="waveCircle">Onda circular</option>
+        <option value="waveH">Onda horizontal</option>
+
+        <!-- Premium -->
+        <option value="circleDouble">Círculo borde doble</option>
+        <option value="circleGradient">Círculo con degradado</option>
+        <option value="squareNeon">Cuadrado neón</option>
+        <option value="metalFrame">Marco metálico</option>
+        <option value="vintageSeal">Sello vintage</option>
     </select>
 
-    <button onclick="generarLogo()">Generar Logo</button>
+    <hr>
+
+    <h3>Opciones de fondo</h3>
+
+    <label>Tipo de fondo</label>
+    <select id="tipoFondo">
+        <option value="solid">Color sólido</option>
+        <option value="gradient">Degradado lineal</option>
+        <option value="radial">Degradado radial</option>
+        <option value="stripes">Franjas</option>
+        <option value="sunset">Atardecer caribeño</option>
+        <option value="sea">Mar Caribe</option>
+    </select>
+
+    <div class="fila">
+        <div>
+            <label>Color fondo 1</label>
+            <input type="color" id="colorFondo1" value="#ffffff">
+        </div>
+        <div>
+            <label>Color fondo 2</label>
+            <input type="color" id="colorFondo2" value="#e0e0e0">
+        </div>
+    </div>
+
+    <button onclick="generarLogo()">Generar Logo / Fondo</button>
     <button onclick="descargarLogo()">Descargar PNG</button>
 
     <div id="preview">
-        <canvas id="canvas" width="500" height="500"></canvas>
+        <canvas id="canvas" width="700" height="500"></canvas>
     </div>
 </div>
 
 <script>
+function dibujarFondo(ctx, w, h, tipo, c1, c2) {
+    if (tipo === "solid") {
+        ctx.fillStyle = c1;
+        ctx.fillRect(0, 0, w, h);
+    } else if (tipo === "gradient") {
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, c1);
+        grad.addColorStop(1, c2);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+    } else if (tipo === "radial") {
+        const grad = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, Math.max(w,h)/1.2);
+        grad.addColorStop(0, c1);
+        grad.addColorStop(1, c2);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+    } else if (tipo === "stripes") {
+        ctx.fillStyle = c1;
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = c2;
+        const stripeHeight = 30;
+        for (let y = 0; y < h; y += stripeHeight*2) {
+            ctx.fillRect(0, y, w, stripeHeight);
+        }
+    } else if (tipo === "sunset") {
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, "#ff9a00");
+        grad.addColorStop(0.5, "#ff0055");
+        grad.addColorStop(1, "#2b0040");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+    } else if (tipo === "sea") {
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, "#00c6ff");
+        grad.addColorStop(0.5, "#0072ff");
+        grad.addColorStop(1, "#001f3f");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.strokeStyle = "rgba(255,255,255,0.5)";
+        ctx.lineWidth = 2;
+        for (let y = h*0.4; y < h; y += 20) {
+            ctx.beginPath();
+            for (let x = 0; x < w; x += 20) {
+                const offset = Math.sin((x + y) / 40) * 5;
+                ctx.lineTo(x, y + offset);
+            }
+            ctx.stroke();
+        }
+    }
+}
+
+function dibujarForma(ctx, forma, cx, cy, w, h) {
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+    ctx.lineWidth = 4;
+
+    const rw = w * 0.6;
+    const rh = h * 0.6;
+    const x = cx - rw/2;
+    const y = cy - rh/2;
+    const r = Math.min(rw, rh)/2;
+
+    if (forma === "none") {
+        ctx.restore();
+        return;
+    }
+
+    ctx.beginPath();
+
+    if (forma === "circle" || forma === "circleDouble" || forma === "circleGradient" || forma === "waveCircle") {
+        ctx.arc(cx, cy, r, 0, Math.PI*2);
+        ctx.fill();
+        if (forma === "circleDouble") {
+            ctx.strokeStyle = "rgba(0,0,0,0.5)";
+            ctx.lineWidth = 6;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(cx, cy, r*0.8, 0, Math.PI*2);
+            ctx.stroke();
+        } else if (forma === "circleGradient") {
+            const grad = ctx.createRadialGradient(cx, cy, r*0.2, cx, cy, r);
+            grad.addColorStop(0, "rgba(255,255,255,1)");
+            grad.addColorStop(1, "rgba(0,0,0,0.15)");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI*2);
+            ctx.fill();
+        } else if (forma === "waveCircle") {
+            ctx.clip();
+            ctx.fillStyle = "rgba(0,150,255,0.3)";
+            for (let yy = cy - r; yy < cy + r; yy += 15) {
+                ctx.beginPath();
+                for (let xx = cx - r; xx < cx + r; xx += 10) {
+                    const off = Math.sin((xx + yy)/25)*5;
+                    ctx.lineTo(xx, yy + off);
+                }
+                ctx.strokeStyle = "rgba(0,80,200,0.6)";
+                ctx.stroke();
+            }
+        }
+    } else if (forma === "square" || forma === "squareNeon") {
+        ctx.fillRect(x, y, rw, rh);
+        if (forma === "squareNeon") {
+            ctx.strokeStyle = "#00ffff";
+            ctx.shadowColor = "#00ffff";
+            ctx.shadowBlur = 20;
+            ctx.strokeRect(x+4, y+4, rw-8, rh-8);
+        }
+    } else if (forma === "rect" || forma === "cardH" || forma === "cardV" || forma === "metalFrame") {
+        let ww = rw;
+        let hh = rh;
+        if (forma === "cardH") { ww = rw * 1.2; hh = rh * 0.6; }
+        if (forma === "cardV") { ww = rw * 0.7; hh = rh * 1.2; }
+        const xx = cx - ww/2;
+        const yy = cy - hh/2;
+        ctx.fillRect(xx, yy, ww, hh);
+        if (forma === "metalFrame") {
+            const grad = ctx.createLinearGradient(xx, yy, xx+ww, yy+hh);
+            grad.addColorStop(0, "#cccccc");
+            grad.addColorStop(0.5, "#888888");
+            grad.addColorStop(1, "#f0f0f0");
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 6;
+            ctx.strokeRect(xx+3, yy+3, ww-6, hh-6);
+        }
+    } else if (forma === "oval") {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(1.3, 1);
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI*2);
+        ctx.restore();
+        ctx.fill();
+    } else if (forma === "triangle") {
+        ctx.moveTo(cx, cy - r);
+        ctx.lineTo(cx - r, cy + r);
+        ctx.lineTo(cx + r, cy + r);
+        ctx.closePath();
+        ctx.fill();
+    } else if (forma === "hexagon") {
+        for (let i = 0; i < 6; i++) {
+            const ang = Math.PI/3 * i - Math.PI/6;
+            const xx = cx + r * Math.cos(ang);
+            const yy = cy + r * Math.sin(ang);
+            if (i === 0) ctx.moveTo(xx, yy);
+            else ctx.lineTo(xx, yy);
+        }
+        ctx.closePath();
+        ctx.fill();
+    } else if (forma === "rounded" || forma === "pill") {
+        let radius = 30;
+        let ww = rw;
+        let hh = rh;
+        if (forma === "pill") {
+            ww = rw * 1.3;
+            hh = rh * 0.5;
+            radius = hh/2;
+        }
+        const xx = cx - ww/2;
+        const yy = cy - hh/2;
+        ctx.moveTo(xx + radius, yy);
+        ctx.lineTo(xx + ww - radius, yy);
+        ctx.quadraticCurveTo(xx + ww, yy, xx + ww, yy + radius);
+        ctx.lineTo(xx + ww, yy + hh - radius);
+        ctx.quadraticCurveTo(xx + ww, yy + hh, xx + ww - radius, yy + hh);
+        ctx.lineTo(xx + radius, yy + hh);
+        ctx.quadraticCurveTo(xx, yy + hh, xx, yy + hh - radius);
+        ctx.lineTo(xx, yy + radius);
+        ctx.quadraticCurveTo(xx, yy, xx + radius, yy);
+        ctx.closePath();
+        ctx.fill();
+    } else if (forma === "star") {
+        const spikes = 5;
+        const outerRadius = r;
+        const innerRadius = r * 0.45;
+        let rot = Math.PI / 2 * 3;
+        let x = cx;
+        let y = cy;
+        ctx.moveTo(cx, cy - outerRadius);
+        for (let i = 0; i < spikes; i++) {
+            x = cx + Math.cos(rot) * outerRadius;
+            y = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x, y);
+            rot += Math.PI / spikes;
+
+            x = cx + Math.cos(rot) * innerRadius;
+            y = cy + Math.sin(rot) * innerRadius;
+            ctx.lineTo(x, y);
+            rot += Math.PI / spikes;
+        }
+        ctx.closePath();
+        ctx.fill();
+    } else if (forma === "seal" || forma === "vintageSeal" || forma === "wavySeal") {
+        const points = 32;
+        for (let i = 0; i <= points; i++) {
+            const ang = (Math.PI*2/points) * i;
+            let rr = r;
+            if (forma === "wavySeal") {
+                rr = r + Math.sin(i*0.7)*8;
+            }
+            const xx = cx + rr * Math.cos(ang);
+            const yy = cy + rr * Math.sin(ang);
+            if (i === 0) ctx.moveTo(xx, yy);
+            else ctx.lineTo(xx, yy);
+        }
+        ctx.closePath();
+        ctx.fill();
+        if (forma === "vintageSeal") {
+            ctx.strokeStyle = "rgba(0,0,0,0.4)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+    } else if (forma === "flag") {
+        const ww = rw * 1.2;
+        const hh = rh * 0.5;
+        const xx = cx - ww/2;
+        const yy = cy - hh/2;
+        ctx.moveTo(xx, yy);
+        ctx.lineTo(xx + ww*0.7, yy);
+        ctx.lineTo(xx + ww, yy + hh/2);
+        ctx.lineTo(xx + ww*0.7, yy + hh);
+        ctx.lineTo(xx, yy + hh);
+        ctx.closePath();
+        ctx.fill();
+    } else if (forma === "drop") {
+        ctx.moveTo(cx, cy - r);
+        ctx.bezierCurveTo(cx + r, cy - r, cx + r, cy + r*0.2, cx, cy + r);
+        ctx.bezierCurveTo(cx - r, cy + r*0.2, cx - r, cy - r, cx, cy - r);
+        ctx.closePath();
+        ctx.fill();
+    } else if (forma === "diamondDX") {
+        ctx.moveTo(cx, cy - r);
+        ctx.lineTo(cx + r*1.2, cy);
+        ctx.lineTo(cx, cy + r);
+        ctx.lineTo(cx - r*1.2, cy);
+        ctx.closePath();
+        ctx.fill();
+    } else if (forma === "waveH") {
+        const ww = rw * 1.3;
+        const hh = rh * 0.4;
+        const xx = cx - ww/2;
+        const yy = cy - hh/2;
+        ctx.moveTo(xx, yy + hh/2);
+        for (let x2 = xx; x2 <= xx + ww; x2 += 10) {
+            const off = Math.sin((x2 - xx)/20) * (hh/2);
+            ctx.lineTo(x2, yy + hh/2 + off);
+        }
+        ctx.lineTo(xx + ww, yy + hh);
+        ctx.lineTo(xx, yy + hh);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
 function generarLogo() {
-    const texto = document.getElementById("texto").value;
-    const color = document.getElementById("color").value;
-    const tamano = parseInt(document.getElementById("tamano").value);
+    const texto = document.getElementById("texto").value || "";
+    const colorTexto = document.getElementById("colorTexto").value;
+    const tamanoTexto = parseInt(document.getElementById("tamanoTexto").value) || 60;
     const forma = document.getElementById("forma").value;
+
+    const tipoFondo = document.getElementById("tipoFondo").value;
+    const colorFondo1 = document.getElementById("colorFondo1").value;
+    const colorFondo2 = document.getElementById("colorFondo2").value;
 
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, w, h);
 
-    // Fondo blanco
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Fondo
+    dibujarFondo(ctx, w, h, tipoFondo, colorFondo1, colorFondo2);
 
-    // Dibujar forma
-    if (forma === "circle") {
-        ctx.fillStyle = "#e0e0e0";
-        ctx.beginPath();
-        ctx.arc(250, 250, 200, 0, Math.PI * 2);
-        ctx.fill();
-    } else if (forma === "square") {
-        ctx.fillStyle = "#e0e0e0";
-        ctx.fillRect(50, 50, 400, 400);
-    }
+    // Forma
+    const cx = w / 2;
+    const cy = h / 2;
+    dibujarForma(ctx, forma, cx, cy, w, h);
 
     // Texto
-    ctx.fillStyle = color;
-    ctx.font = `${tamano}px Arial`;
+    ctx.fillStyle = colorTexto;
+    ctx.font = `${tamanoTexto}px Arial`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(texto, 250, 250);
+
+    const maxWidth = w * 0.7;
+    let textoFinal = texto;
+    if (ctx.measureText(texto).width > maxWidth) {
+        while (textoFinal.length > 0 && ctx.measureText(textoFinal + "…").width > maxWidth) {
+            textoFinal = textoFinal.slice(0, -1);
+        }
+        textoFinal += "…";
+    }
+
+    ctx.fillText(textoFinal, cx, cy);
 }
 
 function descargarLogo() {
     const canvas = document.getElementById("canvas");
     const enlace = document.createElement("a");
-    enlace.download = "logo.png";
-    enlace.href = canvas.toDataURL();
+    enlace.download = "logo-caribe.png";
+    enlace.href = canvas.toDataURL("image/png");
     enlace.click();
 }
 </script>
